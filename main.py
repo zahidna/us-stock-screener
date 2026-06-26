@@ -5,29 +5,25 @@ import yfinance as yf
 import requests
 from datetime import datetime
 
-
 # =========================
-# CONFIG FROM GITHUB SECRETS
+# GITHUB SECRETS VARIABLE
 # =========================
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 CHAT_ID = os.getenv("CHAT_ID")
 
-
 # =========================
-# PREDEFINED TICKERS
+# PREDEFINED TICKERS: AVAILABLE ON AJAIB
 # =========================
 tickers = """
 ABCL,ACAD,AAP,ACB,ACM,ACI,AFG,ADI,ADM,AIV,ADPT,ADSK,ADT,AEG,AMT,APD,ARR,BMY,AFRM,BNS,BTI,AI,CAT,AKAM,ALB,ALGN,ALL,ALLE,CL,ALNY,CMCSA,AMCR,AME,AMED,CPB,AMH,AMPL,CVS,AMWL,ANET,ANF,ANGI,ANSS,DE,DELL,DG,API,APO,APPN,APTV,ARCC,ARE,DGX,ARKO,DHR,ASAN,ASND,ASTS,ASX,ATER,ATO,AU,DNUT,AZO,BAH,BAX,BBIO,BBVA,BBY,BC,BDX,BEN,BF.B,BHP,BIIB,BILL,BIO,BIRD,EH,BMBL,EMR,ENPH,EOG,EPAM,EQIX,BNTX,EQNR,BOX,BRZE,BSX,DIA,BUD,BYND,EXPD,CAH,EXPE,CB,CCI,CCL,CDNS,CDW,CELH,CF,CG,CGC,CHD,CHRW,CHTR,CHWY,CI,EXR,CINF,FANG,FIZZ,FMC,CNC,CNI,CNQ,COF,COP,COUR,PGX,CPRI,CRL,CRON,CRSP,CRSR,CRWD,CSX,SPHD,CTSH,CUBE,CVAC,CVE,CVNA,FOXA,CZR,D,FSLR,DD,DDOG,FSLY,FTNT,GD,GDDY,GE,ACP,GFI,DKNG,DLR,DLTR,CAG,DOCN,DOV,DOW,RY,DVA,DVN,DXCM,CLX,ENTG,LEN,BMO,MRSH,VLO,AES,AGNC,ALLY,AOS,LNT,LW,GIS,ACWI,AOR,ARKK,TCPC,BLOK,BND,BNDX,BOTZ,CIBR,E,EC,ECL,GPN,GSK,EIDO,H,HAL,HCA,HES,HLF,ESS,ETSY,EXFY,HMY,HNST,HOG,HOLX,FFIV,FIGS,FIS,FIVE,FIVN,HON,HRL,HUBS,FRSH,HUM,IAC,ILMN,FUBO,FXI,INCY,GDX,ING,GILD,GLW,GPC,INO,INTU,IRM,ISRG,IT,HDV,ITW,IVZ,JBHT,JBLU,JD,JLL,JMIA,KB,ICL,ICLN,IDXX,IEF,IGOV,IIPR,KLAC,KLG,KLTR,KMX,IQ,KR,KSS,LCID,LHX,LI,IWM,LOGC,LOW,LRCX,LTC,LUV,LYB,JPIN,MAT,KD,KEYS,KGC,MCHP,MDB,MDLZ,KMB,KMI,MDT,MELI,MGM,MRVL,MSI,MT,LMND,LMT,MTB,LQD,MU,LUMN,NCLH,NDAQ,LYV,M,NEM,MBB,NET,MCK,NIO,NKE,NLY,NMR,MKC,MO,MPC,MQ,NNDM,NRDS,NTAP,NTES,NTR,NUE,NEE,NVAX,NVS,ODFL,OKTA,OTIS,PANW,PAYC,NOC,PFE,PLTR,PLUG,PSA,PSEC,PTON,PUBM,OMC,ONL,OPEN,PWR,QS,PATH,REGN,PAYO,PDBC,PGR,PHG,PHM,PLD,RELY,RIVN,PRTS,RJF,PSX,RL,RYAAY,SCCO,QQQ,SFIX,RCL,SJM,SKLZ,RENT,SNPS,SNY,SOFI,RMD,ROK,ROST,RTX,SAM,SAN,SAVA,SBSW,SPCE,SEDG,SPG,STM,SU,SKYY,SLV,SMH,SNN,SWK,SYY,TASK,TCOM,TD,SPGI,XYZ,TDOC,TEAM,TECH,SWKS,TER,TLRY,TME,TPR,TROW,TELFY,TSCO,TTE,TLT,TTWO,TWLO,TWST,TXG,TTD,UNP,UPST,UPWK,VFC,ULTA,UMC,VIPS,VMEO,VRSN,USO,UUP,VEA,VRTX,VGT,VIG,WBA,WDC,VNQ,VNQI,WIT,WIX,VTIP,VTI,VTRS,VTV,VWO,VYM,WM,WMB,WMG,WMS,WPM,WSM,WYNN,XEL,XPEV,XRAY,XLB,XLE,XLF,XLP,XLU,XLY,XYL,YUMC,Z,ZBH,ZS,ZTS,AAPL,AMZN,GOOGL,TSLA,V,XOM,UNH,COST,PG,NFLX,HD,NVO,JNJ,SAP,ASML,KO,CVX,WFC,TM,NOW,MCD,IBM,BX,BABA,AZN,MS,GPRO,INTC,AMC,BB,GT,MANU,UAA,SIRI,MSTR,LOGI,GME,MRNA,DOCU,GRAB,PINS,NOK,ZM,B,EBAY,HOOD,DB,HSY,YUM,RBLX,F,EA,DAL,UAL,BKR,CPNG,LULU,MNST,NU,SNOW,GM,BK,TGT,SE,COIN,MMM,DASH,WDAY,AON,RACE,ABNB,MCO,CMG,PYPL,SPOT,UPS,UBER,SONY,C,BA,SCHW,SHOP,UL,TXN,SHEL,ADBE,AMD,BRK.B,DBX,DLB,LEVI,EL,DUOL,DECK,CROX,BBWI,BIDU,BCS,FVRR,FNKO,GTLB,HAS,KKR,LYFT,MFC,LVS,MSCI,SNAP,TRI,TRIP,U,VALE,VSCO,WB,WEN,NVDA,META,AVGO,TSM,WMT,JPM,MA,ORCL,BAC,CRM,ABBV,MRK,ACN,CSCO,PEP,AXP,DIS,ABT,DPZ,HPE,HPQ,KHC,GRMN,OXY,AIG,FCX,HLT,USB,MAR,BLK,T,BKNG,VZ,GS,PM,GAP,NYT,PSKY,FDX,WU,STX,MTCH,MSFT,SBUX,ADP,AEP,AFL,AGCO,AMAT,AMGN,AWK,CTAS,DBO,DHI,DUK,ED,ENB,FE,HBAN,JCI,KEY,LLY,MAIN,NRG,O,PAYX,PPG,QCOM,SLB,TJX,TMUS,TSN,SATS,FOX,FUTU,ZG,AEM,ALC,BF.A,BF.B,LIN,RVTY,PUK,PRU,UA,SPLV,GLD,XLV,A,AAL,SPY
 """.replace("\n", "").split(",")
 
 tickers = list(set([t.strip() for t in tickers if t.strip()]))
-
 # Yahoo Finance format fix
 tickers = [t.replace(".", "-") for t in tickers]
 
-
 # =========================
-# TELEGRAM SENDER
+# TELEGRAM SENDER ID
 # =========================
 def send_telegram(msg):
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
@@ -36,9 +32,8 @@ def send_telegram(msg):
         "text": msg
     })
 
-
 # =========================
-# DATA
+# GET DATA FROM YAHOO FINANCE
 # =========================
 def get_data():
     return yf.download(
@@ -50,35 +45,52 @@ def get_data():
         progress=False
     )
 
-
 # =========================
-# CALC
+# CALCULATION LOGIC
 # =========================
 def calculate(df):
     df = df.copy()
 
+    # ===== MOVING AVERAGE =====
     df["MA3"] = df["Close"].rolling(3).mean()
     df["MA5"] = df["Close"].rolling(5).mean()
     df["MA10"] = df["Close"].rolling(10).mean()
     df["MA20"] = df["Close"].rolling(20).mean()
 
+    # ===== PREV CLOSE =====
     df["PrevClose"] = df["Close"].shift(1)
 
-    df["VolumeMA20"] = df["Volume"].rolling(20).mean()
-    df["VolumeRatio"] = df["Volume"] / df["VolumeMA20"]
-
-    df["BUY_SETUP"] = (
+    # ===== BUY SETUP =====
+    df["AboveMA"] = (
         (df["Close"] > df["MA3"]) &
         (df["Close"] > df["MA5"]) &
         (df["Close"] > df["MA10"]) &
         (df["Close"] > df["MA20"])
     )
 
+    df["DistanceMA20"] = (df["Close"] - df["MA20"]) / df["MA20"] * 100
+
+    df["BUY_SETUP"] = (
+        df["AboveMA"] &
+        (df["DistanceMA20"] <= 5)
+    )
+
+    # ===== VOLUME =====
+    df["VolumeMA20"] = df["Volume"].rolling(20).mean()
+    df["VolumeRatio"] = df["Volume"] / df["VolumeMA20"]
+
+    # ===== ATR =====
+    high_low = df["High"] - df["Low"]
+    high_close = (df["High"] - df["Close"].shift(1)).abs()
+    low_close = (df["Low"] - df["Close"].shift(1)).abs()
+
+    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
+    df["ATR14"] = tr.rolling(14).mean()
+
     return df
 
-
 # =========================
-# HELPERS
+# FORMATTING HELPERS
 # =========================
 def fmt_ma(price, ma):
     if np.isnan(ma):
@@ -89,41 +101,61 @@ def fmt_ma(price, ma):
 
 
 def fmt_volume(vol, ratio, open_, close):
-    if vol >= 1e6:
+    if vol >= 1e9:
+        v = f"{vol/1e9:.2f}B"
+    elif vol >= 1e6:
         v = f"{vol/1e6:.2f}M"
+    elif vol >= 1e3:
+        v = f"{vol/1e3:.1f}K"
     else:
         v = str(int(vol))
 
-    if close > open_:
-        emoji = "🟢"
-        label = "BUY!"
-    else:
-        emoji = "🔴"
-        label = "SELL!"
+    emoji = "🟢" if close > open_ else "🔴"
+    label = "BUY!" if close > open_ else "SELL!"
 
     return f"{emoji} {v} ({ratio:.2f}x) [{label}]"
 
-
 # =========================
-# FORMAT MESSAGE
+# TELEGRAM MESSAGE FORMAT
 # =========================
 def format_signal(ticker, row):
 
     price = row["Close"]
-    date_str = datetime.now().strftime("%Y-%m-%d")
     high = row["High"]
     low = row["Low"]
     prev = row["PrevClose"]
+    atr = row["ATR14"]
+
+    date_str = datetime.now().strftime("%Y-%m-%d")
 
     change = (price - prev) / prev * 100
     emoji = "🟢" if change >= 0 else "🔴"
 
-    tp1 = high
-    tp2 = high * 1.02
+    next_resistance = high if high > price else np.nan
+
+    if not np.isnan(next_resistance):
+
+        tp_mode = "RESISTANCE"
+
+        tp1 = next_resistance
+        tp2 = next_resistance * 1.02
+
+        reward1 = (tp1 - price) / price * 100
+        reward2 = (tp2 - price) / price * 100
+
+    else:
+
+        tp_mode = "ATR"
+
+        tp1 = price + atr
+        tp2 = price + (2 * atr)
+
+        reward1 = (atr / price) * 100
+        reward2 = ((2 * atr) / price) * 100
 
     return f"""
 ⚡ STOCKS: {ticker}
-📅  {date_str}
+📅 {date_str}
 ══════════════════════
 
 💰 Price Action
@@ -137,21 +169,21 @@ MA5  : {fmt_ma(price,row['MA5'])}
 MA10 : {fmt_ma(price,row['MA10'])}
 MA20 : {fmt_ma(price,row['MA20'])}
 
-🎯 Take Profit
-TP1 : {tp1:.2f} (+{(tp1-price)/price*100:.2f}%)
-TP2 : {tp2:.2f} (+{(tp2-price)/price*100:.2f}%)
+🎯 Take Profit ({tp_mode})
+TP1 : {tp1:.2f} (+{reward1:.2f}%)
+TP2 : {tp2:.2f} (+{reward2:.2f}%)
 
 ━━━━━━━━━━━━━━━━━━
 """
 
 
 # =========================
-# RUN
+# RUN PROGRAM
 # =========================
 def run():
     data = get_data()
 
-    messages = []
+    scored = []
 
     for t in tickers:
         try:
@@ -165,16 +197,24 @@ def run():
             if not bool(last["BUY_SETUP"]):
                 continue
 
-            messages.append(format_signal(t, last))
+            score = float(last["VolumeRatio"])
+
+            msg = format_signal(t, last)
+
+            scored.append((score, msg))
 
         except:
             continue
 
-    if not messages:
+    if not scored:
         send_telegram("No signal today.")
         return
 
-    send_telegram("\n".join(messages[:10]))
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    final_msg = "\n".join([x[1] for x in scored[:10]])
+
+    send_telegram(final_msg)
 
 
 if __name__ == "__main__":
