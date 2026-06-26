@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 import requests
+from datetime import datetime
 
 
 # =========================
@@ -109,6 +110,7 @@ def fmt_volume(vol, ratio, open_, close):
 def format_signal(ticker, row):
 
     price = row["Close"]
+    date_str = datetime.now().strftime("%Y-%m-%d")
     high = row["High"]
     low = row["Low"]
     prev = row["PrevClose"]
@@ -120,7 +122,8 @@ def format_signal(ticker, row):
     tp2 = high * 1.02
 
     return f"""
-STOCKS: {ticker}
+⚡STOCKS: {ticker}
+📅 {date_str}
 ══════════════════════
 
 💰 Price Action
