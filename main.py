@@ -122,8 +122,8 @@ def format_signal(ticker, row):
     tp2 = high * 1.02
 
     return f"""
-⚡STOCKS: {ticker}
-📅 {date_str}
+⚡ STOCKS: {ticker}
+📅  {date_str}
 ══════════════════════
 
 💰 Price Action
