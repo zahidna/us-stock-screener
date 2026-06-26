@@ -63,32 +63,21 @@ def calculate(df):
 
     df["PrevClose"] = df["Close"].shift(1)
 
-    df["AboveMA"] = (
+    df["VolumeMA20"] = df["Volume"].rolling(20).mean()
+    df["VolumeRatio"] = df["Volume"] / df["VolumeMA20"]
+
+    df["BUY_SETUP"] = (
         (df["Close"] > df["MA3"]) &
         (df["Close"] > df["MA5"]) &
         (df["Close"] > df["MA10"]) &
         (df["Close"] > df["MA20"])
     )
 
-    df["DistanceMA20"] = (df["Close"] - df["MA20"]) / df["MA20"] * 100
-
-    df["BUY_SETUP"] = df["AboveMA"] & (df["DistanceMA20"] <= 5)
-
-    df["VolumeMA20"] = df["Volume"].rolling(20).mean()
-    df["VolumeRatio"] = df["Volume"] / df["VolumeMA20"]
-
-    high_low = df["High"] - df["Low"]
-    high_close = (df["High"] - df["Close"].shift(1)).abs()
-    low_close = (df["Low"] - df["Close"].shift(1)).abs()
-
-    tr = pd.concat([high_low, high_close, low_close], axis=1).max(axis=1)
-    df["ATR14"] = tr.rolling(14).mean()
-
     return df
 
 
 # =========================
-# FORMAT
+# HELPERS
 # =========================
 def fmt_ma(price, ma):
     if np.isnan(ma):
@@ -98,14 +87,72 @@ def fmt_ma(price, ma):
     return f"{ma:.2f} ({emoji}{diff:+.2f}%)"
 
 
+def fmt_volume(vol, ratio, open_, close):
+    if vol >= 1e6:
+        v = f"{vol/1e6:.2f}M"
+    else:
+        v = str(int(vol))
+
+    if close > open_:
+        emoji = "🟢"
+        label = "BUY!"
+    else:
+        emoji = "🔴"
+        label = "SELL!"
+
+    return f"{emoji} {v} ({ratio:.2f}x) [{label}]"
+
+
+# =========================
+# FORMAT MESSAGE
+# =========================
+def format_signal(ticker, row):
+
+    price = row["Close"]
+    high = row["High"]
+    low = row["Low"]
+    prev = row["PrevClose"]
+
+    change = (price - prev) / prev * 100
+    emoji = "🟢" if change >= 0 else "🔴"
+
+    tp1 = high
+    tp2 = high * 1.02
+
+    return f"""
+STOCKS: {ticker}
+══════════════════════
+
+💰 Price Action
+{emoji} Close: {price:.2f} ({change:+.2f}%)
+📈 High: {high:.2f} | Low: {low:.2f}
+📊 Volume: {fmt_volume(row['Volume'], row['VolumeRatio'], row['Open'], row['Close'])}
+
+📉 Moving Average Status
+MA3  : {fmt_ma(price,row['MA3'])}
+MA5  : {fmt_ma(price,row['MA5'])}
+MA10 : {fmt_ma(price,row['MA10'])}
+MA20 : {fmt_ma(price,row['MA20'])}
+
+🎯 Take Profit
+TP1 : {tp1:.2f} (+{(tp1-price)/price*100:.2f}%)
+TP2 : {tp2:.2f} (+{(tp2-price)/price*100:.2f}%)
+
+━━━━━━━━━━━━━━━━━━
+"""
+
+
+# =========================
+# RUN
+# =========================
 def run():
     data = get_data()
 
-    results = []
+    messages = []
 
-    for ticker in tickers:
+    for t in tickers:
         try:
-            df = data[ticker].dropna()
+            df = data[t].dropna()
             if len(df) < 30:
                 continue
 
@@ -115,49 +162,16 @@ def run():
             if not bool(last["BUY_SETUP"]):
                 continue
 
-            price = float(last["Close"])
-            high = float(last["High"])
-            low = float(last["Low"])
-            prev = float(last["PrevClose"])
-
-            change = (price - prev) / prev * 100
-            emoji = "🟢" if change >= 0 else "🔴"
-
-            atr = float(last["ATR14"])
-
-            # TP logic
-            tp1 = price + atr
-            tp2 = price + 2 * atr
-
-            results.append(f"""
-📈 {ticker}
-═══════════════
-
-💰 Close: {emoji} {price:.2f} ({change:+.2f}%)
-High: {high:.2f} | Low: {low:.2f}
-
-📉 Trend
-MA3  : {fmt_ma(price,last['MA3'])}
-MA5  : {fmt_ma(price,last['MA5'])}
-MA10 : {fmt_ma(price,last['MA10'])}
-MA20 : {fmt_ma(price,last['MA20'])}
-
-🎯 TP
-TP1: {tp1:.2f}
-TP2: {tp2:.2f}
-
-━━━━━━━━━━━━━━━
-""")
+            messages.append(format_signal(t, last))
 
         except:
             continue
 
-    if not results:
+    if not messages:
         send_telegram("No signal today.")
         return
 
-    final_msg = "\n".join(results[:10])
-    send_telegram(final_msg)
+    send_telegram("\n".join(messages[:10]))
 
 
 if __name__ == "__main__":
